@@ -1,4 +1,13 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Post } from '@nestjs/common';
+import { ChaosSeedsService } from './chaos-seeds.service';
+import { ChaosSeedCreationDto } from './dtos/chaos-seed-creation';
 
 @Controller('chaos-seeds')
-export class ChaosSeedsController {}
+export class ChaosSeedsController {
+  constructor(private readonly chaosSeedsService: ChaosSeedsService) {}
+
+  @Post()
+  create(): ChaosSeedCreationDto {
+    return this.chaosSeedsService.create();
+  }
+}
