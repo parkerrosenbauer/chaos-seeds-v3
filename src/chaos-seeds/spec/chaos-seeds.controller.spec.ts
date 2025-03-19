@@ -1,11 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChaosSeedsController } from '../chaos-seeds.controller';
-import { AREA } from './test-data';
+import { AREA, CHAOS_SEED } from './test-data';
 import { AreasService } from 'src/areas/areas.service';
 import { ChaosSeedsService } from '../chaos-seeds.service';
 
 describe('ChaosSeedsController', () => {
   let controller: ChaosSeedsController;
+  const chaosSeedsService = {
+    create: jest.fn().mockReturnValue(CHAOS_SEED),
+  };
+  const areasService = {
+    getRandom: jest.fn().mockReturnValue(AREA),
+    getIsDeadly: jest.fn().mockReturnValue(false),
+    getName: jest.fn().mockReturnValue({
+      regionName: 'region',
+      biomeName: 'biome',
+    }),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -13,16 +24,11 @@ describe('ChaosSeedsController', () => {
       providers: [
         {
           provide: AreasService,
-          useValue: {
-            getRandom: jest.fn().mockReturnValue(AREA),
-            getIsDeadly: jest.fn().mockReturnValue(false),
-          },
+          useValue: areasService,
         },
         {
           provide: ChaosSeedsService,
-          useValue: {
-            create: jest.fn(),
-          },
+          useValue: chaosSeedsService,
         },
       ],
     }).compile();
@@ -32,5 +38,11 @@ describe('ChaosSeedsController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('should create a new chaos seed', () => {
+    const chaosSeed = controller.create();
+    expect(chaosSeed).toEqual(CHAOS_SEED);
+    expect(chaosSeedsService.create).toHaveBeenCalled();
   });
 });
