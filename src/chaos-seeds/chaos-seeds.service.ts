@@ -1,12 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AreasService } from 'src/areas/areas.service';
+import { AreasService } from '../areas/areas.service';
 import { ChaosSeed } from './models/chaos-seed';
-import { AreaNameDto } from 'src/areas/dtos';
+import { AreaNameDto } from '../areas/dtos';
 import { ChaosSeedCreationDto } from './dtos/chaos-seed-creation';
 
 @Injectable()
 export class ChaosSeedsService {
-  constructor(@Inject('AreasService') private areasService: AreasService) {}
+  constructor(
+    @Inject(AreasService) private readonly areasService: AreasService,
+  ) {}
 
   create(): ChaosSeedCreationDto {
     const startingArea = this.areasService.getRandom();
