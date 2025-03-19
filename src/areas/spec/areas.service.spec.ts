@@ -8,20 +8,10 @@ describe('AreasService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        {
-          provide: AreasService,
-          useValue: {
-            getById: jest.fn().mockReturnValue(AREAS[1]),
-            getRandom: jest.fn().mockReturnValue(AREAS[0]),
-            getBiome: jest.fn().mockReturnValue(BIOMES[0]),
-            getRegion: jest.fn().mockReturnValue(REGIONS[0]),
-            getName: jest.fn().mockReturnValue({
-              regionName: REGIONS[0].name,
-              biomeName: BIOMES[0].name,
-            }),
-            getAll: jest.fn().mockReturnValue(AREAS),
-          },
-        },
+        AreasService,
+        { provide: 'AREAS', useValue: AREAS },
+        { provide: 'BIOMES', useValue: BIOMES },
+        { provide: 'REGIONS', useValue: REGIONS },
       ],
     }).compile();
 
@@ -34,13 +24,18 @@ describe('AreasService', () => {
 
   describe('getRandom', () => {
     it('should return a random area', () => {
-      expect(service.getRandom()).toEqual(AREAS[0]);
+      const randomArea = service.getRandom();
+      expect(AREAS).toContain(randomArea);
     });
   });
 
   describe('getById', () => {
     it('should return an area by id', () => {
-      expect(service.getById(1)).toEqual(AREAS[1]);
+      expect(service.getById(1)).toEqual(AREAS[0]);
+    });
+
+    it('should throw an error if area is not found', () => {
+      expect(() => service.getById(100)).toThrow('Area not found');
     });
   });
 
@@ -48,11 +43,19 @@ describe('AreasService', () => {
     it('should return a biome by id', () => {
       expect(service.getBiome(1)).toEqual(BIOMES[0]);
     });
+
+    it('should throw an error if biome is not found', () => {
+      expect(() => service.getBiome(100)).toThrow('Biome not found');
+    });
   });
 
   describe('getRegion', () => {
     it('should return a region by id', () => {
       expect(service.getRegion(1)).toEqual(REGIONS[0]);
+    });
+
+    it('should throw an error if region is not found', () => {
+      expect(() => service.getRegion(100)).toThrow('Region not found');
     });
   });
 
@@ -63,11 +66,25 @@ describe('AreasService', () => {
         biomeName: BIOMES[0].name,
       });
     });
+
+    it('should throw an error if area is not found', () => {
+      expect(() => service.getName(100)).toThrow('Area not found');
+    });
   });
 
   describe('getAll', () => {
     it('should return all areas', () => {
       expect(service.getAll()).toEqual(AREAS);
+    });
+  });
+
+  describe('getIsDeadly', () => {
+    it('should return true if biome is deadly', () => {
+      expect(service.getIsDeadly(2)).toBe(true);
+    });
+
+    it('should return false if biome is not deadly', () => {
+      expect(service.getIsDeadly(1)).toBe(false);
     });
   });
 });

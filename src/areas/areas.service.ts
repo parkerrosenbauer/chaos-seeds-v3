@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Area } from './models/area';
 import { AREAS, BIOMES, REGIONS } from './spec/test-data';
-import { randomChance } from 'src/common/utils';
+import { randomChance } from '../common/utils';
 import { Biome } from './models/biome';
 import { Region } from './models/region';
 import { AreaNameDto } from './dtos';
@@ -9,9 +9,9 @@ import { AreaNameDto } from './dtos';
 @Injectable()
 export class AreasService {
   constructor(
-    private areas: Area[],
-    private biomes: Biome[],
-    private regions: Region[],
+    @Inject('AREAS') private areas: Area[],
+    @Inject('BIOMES') private biomes: Biome[],
+    @Inject('REGIONS') private regions: Region[],
   ) {
     this.areas = AREAS;
     this.biomes = BIOMES;
