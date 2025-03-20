@@ -1,97 +1,119 @@
 import { Experienced } from '../interfaces';
 import { Identifiable } from 'src/common/interfaces';
+import { ChaosSeedName } from '../value-objects';
+import {
+  AutoIncrement,
+  Column,
+  DataType,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
 
-export class ChaosSeed implements Experienced, Identifiable {
+@Table
+export class ChaosSeed
+  extends Model<ChaosSeed, Partial<ChaosSeed>>
+  implements Experienced, Identifiable
+{
+  @PrimaryKey
+  @AutoIncrement
+  @Column
   declare id: number;
 
+  @Column({
+    type: DataType.STRING,
+    defaultValue: 'Unknown',
+    get() {
+      return new ChaosSeedName(this.getDataValue('name'));
+    },
+    set(value: string | ChaosSeedName) {
+      const cleanedName =
+        value instanceof ChaosSeedName
+          ? value.name
+          : new ChaosSeedName(value).name;
+      this.setDataValue('name', cleanedName);
+    },
+  })
+  declare name: string;
+
+  @Column({ defaultValue: false })
   declare isDeadOnArrival: boolean;
 
+  @Column({ defaultValue: 0 })
   declare startingAreaId: number;
 
+  @Column({ defaultValue: 0 })
   declare raceId: number;
 
-  declare startingArea?: string;
+  @Column({ defaultValue: 'Unknown' })
+  declare startingArea: string;
 
-  declare name?: string;
+  @Column({ defaultValue: 1 })
+  declare level: number;
 
-  declare level?: number;
+  @Column({ defaultValue: 0 })
+  declare xp: number;
 
-  declare xp?: number;
+  @Column({ defaultValue: 0 })
+  declare alignment: number;
 
-  declare alignment?: number;
+  @Column({ defaultValue: 'Level 1 Who are you again?' })
+  declare reputation: string;
 
-  declare reputation?: string;
+  @Column({ defaultValue: 100 })
+  declare health: number;
 
-  declare health?: number;
+  @Column({ defaultValue: 100 })
+  declare mana: number;
 
-  declare mana?: number;
+  @Column({ defaultValue: 100 })
+  declare stamina: number;
 
-  declare stamina?: number;
+  @Column({ defaultValue: 10 })
+  declare strength: number;
 
-  declare strength?: number;
+  @Column({ defaultValue: 10 })
+  declare agility: number;
 
-  declare agility?: number;
+  @Column({ defaultValue: 10 })
+  declare dexterity: number;
 
-  declare dexterity?: number;
+  @Column({ defaultValue: 10 })
+  declare constitution: number;
 
-  declare constitution?: number;
+  @Column({ defaultValue: 10 })
+  declare endurance: number;
 
-  declare endurance?: number;
+  @Column({ defaultValue: 10 })
+  declare intelligence: number;
 
-  declare intelligence?: number;
+  @Column({ defaultValue: 10 })
+  declare wisdom: number;
 
-  declare wisdom?: number;
+  @Column({ defaultValue: 10 })
+  declare charisma: number;
 
-  declare charisma?: number;
+  @Column({ defaultValue: 10 })
+  declare luck: number;
 
-  declare luck?: number;
+  @Column({ defaultValue: 'None ' })
+  declare resistances: string;
 
-  declare resistances?: string;
+  @Column({ defaultValue: 'None ' })
+  declare weaknesses: string;
 
-  declare weaknesses?: string;
+  @Column({ defaultValue: 'None' })
+  declare skills: string;
 
-  declare skills?: string;
+  @Column({ defaultValue: 'None' })
+  declare marks: string;
 
-  declare marks?: string;
+  @Column({ defaultValue: 'None' })
+  declare abilities: string;
 
-  declare abilities?: string[];
+  @Column({ defaultValue: 'None' })
+  declare languages: string;
 
-  declare languages?: string[];
-
-  declare race?: string;
-
-  constructor(
-    id: number,
-    isDeadOnArrival: boolean,
-    startingAreaId: number,
-    raceId: number,
-  ) {
-    this.id = id;
-    this.isDeadOnArrival = isDeadOnArrival;
-    this.startingAreaId = startingAreaId;
-    this.raceId = raceId;
-    this.name = 'Unknown';
-    this.level = 1;
-    this.xp = 0;
-    this.alignment = 0;
-    this.reputation = 'Neutral';
-    this.health = 100;
-    this.mana = 100;
-    this.stamina = 100;
-    this.strength = 10;
-    this.agility = 10;
-    this.dexterity = 10;
-    this.constitution = 10;
-    this.endurance = 10;
-    this.intelligence = 10;
-    this.wisdom = 10;
-    this.charisma = 10;
-    this.luck = 10;
-    this.resistances = 'None';
-    this.weaknesses = 'None';
-    this.skills = 'None';
-    this.marks = 'None';
-    this.abilities = [];
-    this.languages = [];
-  }
+  @Column({ defaultValue: 'None' })
+  declare race: string;
 }

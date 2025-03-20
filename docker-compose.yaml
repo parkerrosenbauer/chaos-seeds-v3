@@ -1,0 +1,10 @@
+services:
+  db:
+    image: postgres
+    container_name: land_postgres_dev
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: land
+    ports:
+      - '5400:5432'

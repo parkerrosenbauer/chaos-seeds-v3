@@ -7,7 +7,7 @@ import { ChaosSeedsService } from '../chaos-seeds.service';
 describe('ChaosSeedsController', () => {
   let controller: ChaosSeedsController;
   const chaosSeedsService = {
-    create: jest.fn().mockReturnValue(CHAOS_SEED),
+    create: jest.fn().mockResolvedValue(CHAOS_SEED),
   };
   const areasService = {
     getRandom: jest.fn().mockReturnValue(AREA),
@@ -42,7 +42,7 @@ describe('ChaosSeedsController', () => {
 
   it('should create a new chaos seed', () => {
     const chaosSeed = controller.create();
-    expect(chaosSeed).toEqual(CHAOS_SEED);
+    expect(chaosSeed).resolves.toEqual(CHAOS_SEED);
     expect(chaosSeedsService.create).toHaveBeenCalled();
   });
 });

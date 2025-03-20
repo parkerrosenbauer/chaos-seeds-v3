@@ -2,10 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ChaosSeedsService } from '../chaos-seeds.service';
 import { AREA, CHAOS_SEED } from './test-data';
 import { AreasService } from 'src/areas/areas.service';
+import { ChaosSeed } from '../models/chaos-seed';
+import { getModelToken } from '@nestjs/sequelize';
 
 describe('ChaosSeedsService', () => {
   let service: ChaosSeedsService;
-  const areasService = {
+  const mockChaosSeed = {
+    create: jest.fn().mockResolvedValue({ id: 1, isDeadOnArrival: false }),
+  };
+  const mockAreaService = {
     getRandom: jest.fn().mockReturnValue(AREA),
     getIsDeadly: jest.fn().mockReturnValue(false),
     getName: jest.fn().mockReturnValue({
@@ -19,8 +24,12 @@ describe('ChaosSeedsService', () => {
       providers: [
         ChaosSeedsService,
         {
+          provide: getModelToken(ChaosSeed),
+          useValue: mockChaosSeed,
+        },
+        {
           provide: AreasService,
-          useValue: areasService,
+          useValue: mockAreaService,
         },
       ],
     }).compile();
@@ -35,9 +44,10 @@ describe('ChaosSeedsService', () => {
   describe('create', () => {
     it('should create a new chaos seed', () => {
       const chaosSeed = service.create();
-      expect(chaosSeed).toEqual(CHAOS_SEED);
-      expect(areasService.getRandom).toHaveBeenCalled();
-      expect(areasService.getIsDeadly).toHaveBeenCalled();
+      expect(chaosSeed).resolves.toEqual(CHAOS_SEED);
+      expect(mockChaosSeed.create).toHaveBeenCalled();
+      expect(mockAreaService.getRandom).toHaveBeenCalled();
+      expect(mockAreaService.getIsDeadly).toHaveBeenCalled();
     });
   });
 });

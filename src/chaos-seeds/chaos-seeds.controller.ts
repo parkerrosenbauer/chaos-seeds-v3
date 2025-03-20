@@ -7,7 +7,7 @@ export class ChaosSeedsController {
   constructor(private readonly chaosSeedsService: ChaosSeedsService) {}
 
   @Post()
-  create(): ChaosSeedCreationDto {
-    return this.chaosSeedsService.create();
+  async create(): Promise<ChaosSeedCreationDto> {
+    return await this.chaosSeedsService.create();
   }
 }
