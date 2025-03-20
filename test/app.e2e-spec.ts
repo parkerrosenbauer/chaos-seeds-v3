@@ -6,9 +6,11 @@ import { AppModule } from '../src/app.module';
 import { AreasService } from '../src/areas/areas.service';
 import { ChaosSeedsService } from '../src/chaos-seeds/chaos-seeds.service';
 import { AREA, CHAOS_SEED } from '../src/chaos-seeds/spec/test-data';
+import { Sequelize } from 'sequelize-typescript';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
+  let sequelize: Sequelize;
 
   const mockChaosSeedService = {
     create: jest.fn().mockReturnValue(CHAOS_SEED),
@@ -33,6 +35,12 @@ describe('AppController (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+
+    sequelize = moduleFixture.get(Sequelize);
+  });
+
+  afterAll(async () => {
+    await sequelize.close();
   });
 
   it('AreasService should be defined', () => {
@@ -44,7 +52,7 @@ describe('AppController (e2e)', () => {
       .post('/chaos-seed')
       .expect(201)
       .expect((res) => {
-        expect(res.body).toEqual(CHAOS_SEED);
+        expect(res.body).resolves.toEqual(CHAOS_SEED);
       });
 
     expect(mockAreasService.getRandom).toHaveBeenCalled();
