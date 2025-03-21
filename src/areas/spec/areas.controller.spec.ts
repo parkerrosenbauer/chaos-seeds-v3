@@ -5,7 +5,11 @@ import { AreasService } from '../areas.service';
 
 describe('AreasController', () => {
   let controller: AreasController;
-  let service: AreasService;
+  const mockAreasService = {
+    getById: jest.fn().mockResolvedValue(AREAS[1]),
+    getRandom: jest.fn().mockResolvedValue(AREAS[0]),
+    getAll: jest.fn().mockResolvedValue(AREAS),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -13,17 +17,12 @@ describe('AreasController', () => {
       providers: [
         {
           provide: AreasService,
-          useValue: {
-            getById: jest.fn().mockReturnValue(AREAS[1]),
-            getRandom: jest.fn().mockReturnValue(AREAS[0]),
-            getAll: jest.fn().mockReturnValue(AREAS),
-          },
+          useValue: mockAreasService,
         },
       ],
     }).compile();
 
     controller = module.get<AreasController>(AreasController);
-    service = module.get<AreasService>(AreasService);
   });
 
   it('should be defined', () => {
@@ -31,27 +30,24 @@ describe('AreasController', () => {
   });
 
   describe('getRandom', () => {
-    it('should return a random area', () => {
-      expect(controller.getRandom()).toBeDefined();
-      expect(controller.getRandom()).toEqual(AREAS[0]);
-      expect(service.getRandom).toHaveBeenCalled();
+    it('should return a random area', async () => {
+      expect(controller.getRandom()).resolves.toEqual(AREAS[0]);
+      expect(mockAreasService.getRandom).toHaveBeenCalled();
     });
   });
 
   describe('getById', () => {
-    it('should return an area by id', () => {
-      expect(controller.getById(1)).toBeDefined();
-      expect(controller.getById(1)).toEqual(AREAS[1]);
-      expect(service.getById).toHaveBeenCalled();
-      expect(service.getById).toHaveBeenCalledWith(1);
+    it('should return an area by id', async () => {
+      expect(controller.getById(1)).resolves.toEqual(AREAS[1]);
+      expect(mockAreasService.getById).toHaveBeenCalled();
+      expect(mockAreasService.getById).toHaveBeenCalledWith(1);
     });
   });
 
   describe('getAll', () => {
-    it('should return all areas', () => {
-      expect(controller.getAll()).toBeDefined();
-      expect(controller.getAll()).toEqual(AREAS);
-      expect(service.getAll).toHaveBeenCalled();
+    it('should return all areas', async () => {
+      expect(controller.getAll()).resolves.toEqual(AREAS);
+      expect(mockAreasService.getAll).toHaveBeenCalled();
     });
   });
 });

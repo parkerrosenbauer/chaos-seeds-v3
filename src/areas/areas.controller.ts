@@ -6,17 +6,17 @@ export class AreasController {
   constructor(private readonly areasService: AreasService) {}
 
   @Get('/:id')
-  getById(@Query(ParseIntPipe) id: number) {
-    return this.areasService.getById(id);
+  async getById(@Query(ParseIntPipe) id: number) {
+    return await this.areasService.getById(id);
   }
 
   @Get('/random')
-  getRandom() {
-    return this.areasService.getRandom();
+  async getRandom() {
+    return await this.areasService.getRandom();
   }
 
   @Get()
-  getAll() {
-    return this.areasService.getAll();
+  async getAll() {
+    return await this.areasService.getAll();
   }
 }

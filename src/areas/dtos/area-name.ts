@@ -1,4 +1,4 @@
-export interface AreaNameDto {
+export interface AreaNameResponse {
   regionName: string;
   biomeName: string;
 }

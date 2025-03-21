@@ -1,8 +1,4 @@
-import { Area } from 'src/areas/models/area';
-import { Biome } from 'src/areas/models/biome';
-import { Region } from 'src/areas/models/region';
-
-export const REGIONS: Region[] = [
+export const REGIONS = [
   {
     id: 1,
     name: 'Region 1',
@@ -15,7 +11,7 @@ export const REGIONS: Region[] = [
   },
 ];
 
-export const BIOMES: Biome[] = [
+export const BIOMES = [
   {
     id: 1,
     name: 'Biome 1',
@@ -28,7 +24,7 @@ export const BIOMES: Biome[] = [
   },
 ];
 
-export const AREAS: Area[] = [
+export const AREAS = [
   {
     regionId: 1,
     biomeId: 1,

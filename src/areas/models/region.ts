@@ -1,11 +1,34 @@
+import {
+  AllowNull,
+  AutoIncrement,
+  BelongsToMany,
+  Column,
+  Model,
+  PrimaryKey,
+  Table,
+} from 'sequelize-typescript';
 import { Identifiable } from 'src/common/interfaces';
+import { Biome } from './biome';
+import { Area } from './area';
 
-export class Region implements Identifiable {
+@Table
+export class Region
+  extends Model<Region, Partial<Region>>
+  implements Identifiable
+{
+  @PrimaryKey
+  @AutoIncrement
+  @Column
   declare id: number;
 
+  @AllowNull(false)
+  @Column
   declare name: string;
 
+  @AllowNull(false)
+  @Column
   declare description: string;
 
-  declare biomes?: string;
+  @BelongsToMany(() => Biome, () => Area)
+  declare biomes?: Biome[];
 }

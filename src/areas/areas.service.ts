@@ -4,65 +4,66 @@ import { AREAS, BIOMES, REGIONS } from './spec/test-data';
 import { randomChance } from '../common/utils';
 import { Biome } from './models/biome';
 import { Region } from './models/region';
-import { AreaNameDto } from './dtos';
+import { AreaNameResponse } from './dtos';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class AreasService {
   constructor(
-    @Inject('AREAS') private areas: Area[],
-    @Inject('BIOMES') private biomes: Biome[],
-    @Inject('REGIONS') private regions: Region[],
-  ) {
-    this.areas = AREAS;
-    this.biomes = BIOMES;
-    this.regions = REGIONS;
-  }
+    @InjectModel(Area) private areaModel: typeof Area,
+    @InjectModel(Biome) private biomeModel: typeof Biome,
+    @InjectModel(Region) private regionModel: typeof Region,
+  ) {}
 
-  getById(id: number) {
-    const area = this.areas.find((area) => area.id === id);
+  async getById(id: number) {
+    const area = await this.areaModel.findByPk(id);
     if (!area) {
       throw new NotFoundException('Area not found');
     }
     return area;
   }
 
-  getRandom() {
-    return randomChance(this.areas);
+  async getRandom() {
+    const areas = await this.areaModel.findAll();
+    if (!areas.length) {
+      throw new NotFoundException('No areas found');
+    }
+    return randomChance<Area>(areas);
   }
 
-  getBiome(biomeId: number) {
-    const biome = this.biomes.find((biome) => biome.id === biomeId);
+  async getBiome(biomeId: number) {
+    const biome = await this.biomeModel.findByPk(biomeId);
     if (!biome) {
       throw new NotFoundException('Biome not found');
     }
     return biome;
   }
 
-  getRegion(regionId: number) {
-    const region = this.regions.find((region) => region.id === regionId);
+  async getRegion(regionId: number) {
+    const region = await this.regionModel.findByPk(regionId);
     if (!region) {
       throw new NotFoundException('Region not found');
     }
     return region;
   }
 
-  getName(id: number): AreaNameDto {
-    const area = this.getById(id);
-    const regionName = this.getRegion(area.regionId).name;
-    const biomeName = this.getBiome(area.biomeId).name;
+  async getName(id: number): Promise<AreaNameResponse> {
+    const area = await this.getById(id);
+    const region = await this.getRegion(area.regionId);
+    const biome = await this.getBiome(area.biomeId);
     return {
-      regionName: regionName,
-      biomeName: biomeName,
+      regionName: region.name,
+      biomeName: biome.name,
     };
   }
 
-  getIsDeadly(id: number) {
-    const area = this.getById(id);
-    const biome = this.getBiome(area.biomeId);
+  async getIsDeadly(id: number) {
+    const area = await this.getById(id);
+    const biome = await this.getBiome(area.biomeId);
     return biome.isDeadly;
   }
 
-  getAll() {
-    return this.areas;
+  async getAll() {
+    return await this.areaModel.findAll();
   }
 }

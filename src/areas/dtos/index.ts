@@ -1,1 +1,1 @@
-export { AreaNameDto } from './area-name';
+export { AreaNameResponse } from './area-name';
