@@ -4,34 +4,18 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
 import { AreasService } from '../src/areas/areas.service';
-import { ChaosSeedsService } from '../src/chaos-seeds/chaos-seeds.service';
-import { AREA, CHAOS_SEED } from '../src/chaos-seeds/spec/test-data';
 import { Sequelize } from 'sequelize-typescript';
+import { ChaosSeed } from '../src/chaos-seeds/models/chaos-seed';
+import { ChaosSeedName } from '../src/chaos-seeds/value-objects';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
   let sequelize: Sequelize;
 
-  const mockChaosSeedService = {
-    create: jest.fn().mockReturnValue(CHAOS_SEED),
-  };
-
-  const mockAreasService = {
-    getRandom: jest.fn().mockReturnValue(AREA),
-    getIsDeadly: jest.fn().mockReturnValue(false),
-    getName: jest.fn().mockReturnValue({
-      regionName: 'region',
-      biomeName: 'biome',
-    }),
-  };
-
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .overrideProvider(AreasService)
-      .useValue(mockAreasService)
-      .compile();
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
@@ -39,24 +23,73 @@ describe('AppController (e2e)', () => {
     sequelize = moduleFixture.get(Sequelize);
   });
 
+  afterEach(async () => {
+    await sequelize.sync({ alter: true });
+  });
+
   afterAll(async () => {
     await sequelize.close();
+    await app.close();
   });
 
-  it('AreasService should be defined', () => {
-    expect(mockAreasService).toBeDefined();
+  describe('POST /chaos-seeds', () => {
+    it('should add a new chaos seed to the database', async () => {
+      const response = await request(app.getHttpServer())
+        .post('/chaos-seeds')
+        .expect(201);
+
+      // response
+      expect(response.body).toHaveProperty('chaosSeedId');
+
+      // database
+      const chaosSeed = await ChaosSeed.findByPk(response.body.chaosSeedId);
+      expect(chaosSeed).not.toBeNull();
+      expect(chaosSeed?.name).toEqual('Unknown');
+    });
+
+    it('should call AreasService.getRandom', async () => {
+      const areasService = app.get(AreasService);
+      const getRandomSpy = jest.spyOn(areasService, 'getRandom');
+      await request(app.getHttpServer()).post('/chaos-seeds').expect(201);
+
+      expect(getRandomSpy).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('/ chaos-seeds', async () => {
-    await request(app.getHttpServer())
-      .post('/chaos-seed')
-      .expect(201)
-      .expect((res) => {
-        expect(res.body).resolves.toEqual(CHAOS_SEED);
+  describe('PATCH /chaos-seeds/:id/name', () => {
+    it('should update the name in the database when the chaos seed is alive', async () => {
+      const newChaosSeed = await ChaosSeed.create({
+        isDeadOnArrival: false,
+        startingAreaId: 1,
       });
+      const chaosSeedId = newChaosSeed.id;
+      const patchResponse = await request(app.getHttpServer())
+        .patch(`/chaos-seeds/${chaosSeedId}/name`)
+        .send({ name: 'Heman_123' })
+        .expect(200);
 
-    expect(mockAreasService.getRandom).toHaveBeenCalled();
-    expect(mockAreasService.getName).toHaveBeenCalledWith(AREA.id);
-    expect(mockAreasService.getIsDeadly).toHaveBeenCalledWith(AREA.id);
+      // response
+      expect(patchResponse.body).toEqual({ name: 'Heman' });
+
+      // database
+      const chaosSeed = await ChaosSeed.findByPk(chaosSeedId);
+      expect(chaosSeed?.name).toEqual('Heman');
+    });
+
+    it('should throw error when updating a dead chaos seed name', async () => {
+      const newChaosSeed = await ChaosSeed.create({
+        isDeadOnArrival: true,
+        startingAreaId: 1,
+      });
+      const chaosSeedId = newChaosSeed.id;
+      await request(app.getHttpServer())
+        .patch(`/chaos-seeds/${chaosSeedId}/name`)
+        .send({ name: 'Heman_123' })
+        .expect(400);
+
+      // database
+      const chaosSeed = await ChaosSeed.findByPk(chaosSeedId);
+      expect(chaosSeed?.name).toEqual('Unknown');
+    });
   });
 });
