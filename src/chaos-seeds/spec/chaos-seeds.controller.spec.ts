@@ -8,11 +8,12 @@ describe('ChaosSeedsController', () => {
   let controller: ChaosSeedsController;
   const chaosSeedsService = {
     create: jest.fn().mockResolvedValue(CHAOS_SEED),
+    patchName: jest.fn().mockResolvedValue({ name: 'Heman' }),
   };
   const areasService = {
-    getRandom: jest.fn().mockReturnValue(AREA),
-    getIsDeadly: jest.fn().mockReturnValue(false),
-    getName: jest.fn().mockReturnValue({
+    getRandom: jest.fn().mockResolvedValue(AREA),
+    getIsDeadly: jest.fn().mockResolvedValue(false),
+    getName: jest.fn().mockResolvedValue({
       regionName: 'region',
       biomeName: 'biome',
     }),
@@ -40,9 +41,20 @@ describe('ChaosSeedsController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a new chaos seed', () => {
-    const chaosSeed = controller.create();
-    expect(chaosSeed).resolves.toEqual(CHAOS_SEED);
-    expect(chaosSeedsService.create).toHaveBeenCalled();
+  describe('create', () => {
+    it('should create a new chaos seed', () => {
+      const chaosSeed = controller.create();
+      expect(chaosSeed).resolves.toEqual(CHAOS_SEED);
+      expect(chaosSeedsService.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('patchName', () => {
+    it('should returned the cleaned chaos seed name', () => {
+      const chaosSeedNameReq = { name: 'Heman_123' };
+      const chaosSeedName = controller.patchName(1, chaosSeedNameReq);
+      expect(chaosSeedName).resolves.toEqual({ name: 'Heman' });
+      expect(chaosSeedsService.patchName).toHaveBeenCalled();
+    });
   });
 });
