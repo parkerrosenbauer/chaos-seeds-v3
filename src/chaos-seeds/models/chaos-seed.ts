@@ -3,12 +3,15 @@ import { Identifiable } from 'src/common/interfaces';
 import { ChaosSeedName } from '../value-objects';
 import {
   AutoIncrement,
+  BelongsTo,
   Column,
   DataType,
+  ForeignKey,
   Model,
   PrimaryKey,
   Table,
 } from 'sequelize-typescript';
+import { Area } from '../../areas/models/area';
 
 @Table
 export class ChaosSeed
@@ -23,9 +26,6 @@ export class ChaosSeed
   @Column({
     type: DataType.STRING,
     defaultValue: 'Unknown',
-    get() {
-      return new ChaosSeedName(this.getDataValue('name'));
-    },
     set(value: string | ChaosSeedName) {
       const cleanedName =
         value instanceof ChaosSeedName
@@ -39,14 +39,15 @@ export class ChaosSeed
   @Column({ defaultValue: false })
   declare isDeadOnArrival: boolean;
 
-  @Column({ defaultValue: 0 })
+  @ForeignKey(() => Area)
+  @Column
   declare startingAreaId: number;
+
+  @BelongsTo(() => Area)
+  declare startingArea: Area;
 
   @Column({ defaultValue: 0 })
   declare raceId: number;
-
-  @Column({ defaultValue: 'Unknown' })
-  declare startingArea: string;
 
   @Column({ defaultValue: 1 })
   declare level: number;
