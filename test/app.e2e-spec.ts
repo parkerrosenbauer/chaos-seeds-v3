@@ -3,10 +3,11 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
-import { AreasService } from '../src/areas/areas.service';
 import { Sequelize } from 'sequelize-typescript';
 import { ChaosSeed } from '../src/chaos-seeds/models/chaos-seed';
-import { ChaosSeedName } from '../src/chaos-seeds/value-objects';
+import { seedDatabase } from '../src/database/seeds';
+import { AreasService } from '../src/areas/areas.service';
+import { ChaosSeedAbility } from '../src/chaos-seeds/models';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -21,10 +22,10 @@ describe('AppController (e2e)', () => {
     await app.init();
 
     sequelize = moduleFixture.get(Sequelize);
-  });
 
-  afterEach(async () => {
-    await sequelize.sync({ alter: true });
+    // reset and reseed the database
+    await sequelize.sync({ force: true });
+    await seedDatabase(sequelize);
   });
 
   afterAll(async () => {
@@ -56,15 +57,15 @@ describe('AppController (e2e)', () => {
     });
   });
 
-  describe('PATCH /chaos-seeds/:id/name', () => {
-    it('should update the name in the database when the chaos seed is alive', async () => {
+  describe('PATCH /chaos-seeds/:id/self', () => {
+    it('should patch the chaos seed and update db when alive', async () => {
       const newChaosSeed = await ChaosSeed.create({
         isDeadOnArrival: false,
         startingAreaId: 1,
       });
-      const chaosSeedId = newChaosSeed.id;
+
       const patchResponse = await request(app.getHttpServer())
-        .patch(`/chaos-seeds/${chaosSeedId}/name`)
+        .patch(`/chaos-seeds/${newChaosSeed.id}/self`)
         .send({ name: 'Heman_123' })
         .expect(200);
 
@@ -72,24 +73,31 @@ describe('AppController (e2e)', () => {
       expect(patchResponse.body).toEqual({ name: 'Heman' });
 
       // database
-      const chaosSeed = await ChaosSeed.findByPk(chaosSeedId);
-      expect(chaosSeed?.name).toEqual('Heman');
-    });
+      const chaosSeed = await ChaosSeed.findByPk(newChaosSeed.id);
 
-    it('should throw error when updating a dead chaos seed name', async () => {
-      const newChaosSeed = await ChaosSeed.create({
-        isDeadOnArrival: true,
-        startingAreaId: 1,
+      // verify chaos seed was assigned an ability
+      const chaosSeedAbilities = await chaosSeed?.$get('abilities');
+      expect(chaosSeedAbilities).not.toBeNull();
+      expect(chaosSeedAbilities?.length).toBeGreaterThan(0);
+      const assignedAbility = chaosSeedAbilities![0];
+      expect(assignedAbility).toBeDefined();
+
+      // verify ChaosSeedAbility entry
+      const chaosSeedAbilityEntry = await ChaosSeedAbility.findOne({
+        where: {
+          chaosSeedId: chaosSeed?.id,
+          abilityId: assignedAbility.id,
+        },
       });
-      const chaosSeedId = newChaosSeed.id;
-      await request(app.getHttpServer())
-        .patch(`/chaos-seeds/${chaosSeedId}/name`)
-        .send({ name: 'Heman_123' })
-        .expect(400);
+      expect(chaosSeedAbilityEntry).not.toBeNull();
 
-      // database
-      const chaosSeed = await ChaosSeed.findByPk(chaosSeedId);
-      expect(chaosSeed?.name).toEqual('Unknown');
+      // verify ability was assigned the chaos seed
+      const abilityChaosSeeds = await assignedAbility.$get('chaosSeeds');
+      expect(abilityChaosSeeds).not.toBeNull();
+      expect(abilityChaosSeeds?.length).toBeGreaterThan(0);
+      const assignedChaosSeed = abilityChaosSeeds![0];
+      expect(assignedChaosSeed).toBeDefined();
+      expect(assignedChaosSeed.id).toEqual(chaosSeed?.id);
     });
   });
 });

@@ -26,11 +26,8 @@ export class ChaosSeedsService {
     @InjectModel(Race) private raceModel: typeof Race,
     @InjectModel(Ability) private abilityModel: typeof Ability,
     @InjectModel(Language) private languageModel: typeof Language,
-    @InjectModel(ChaosSeedLanguage)
-    private chaosSeedLanguageModel: typeof ChaosSeedLanguage,
-    @InjectModel(ChaosSeedAbility)
-    private chaosSeedAbilityModel: typeof ChaosSeedAbility,
-    @Inject(AreasService) private readonly areasService: AreasService,
+    @Inject(AreasService)
+    private readonly areasService: AreasService,
     private sequelize: Sequelize,
   ) {}
 
@@ -43,7 +40,7 @@ export class ChaosSeedsService {
     const chaosSeed = await this.chaosSeedModel.create({
       isDeadOnArrival: await this.areasService.getIsDeadly(startingArea.id),
       startingAreaId: startingArea.id,
-    } as ChaosSeed);
+    });
 
     return {
       chaosSeedId: chaosSeed.id,
@@ -91,52 +88,27 @@ export class ChaosSeedsService {
     try {
       await this.sequelize.transaction(async (t) => {
         // set name
-        chaosSeed.name = chaosSeedNameReq.name;
+        chaosSeed.set('name', chaosSeedNameReq.name);
+        chaosSeed = await chaosSeed.save();
 
         // set race
         const randomRace = await this.getRandomRace();
-        chaosSeed.raceId = randomRace.id;
+        await chaosSeed.$set('race', randomRace, { transaction: t });
 
         // set ability
         const randomAbility = await this.getRandomAbility();
-        chaosSeed.abilities = [randomAbility];
+        await chaosSeed.$add('abilities', randomAbility, { transaction: t });
 
         // set language(s)
         const commonLanguage = await this.languageModel.findOne({
           where: { name: 'Common' },
         });
-        const languages: Language[] = [commonLanguage!];
-        const racialLanguage = await this.getRacialLanguage(chaosSeed.raceId);
+        await chaosSeed.$add('languages', commonLanguage!, { transaction: t });
 
+        const racialLanguage = await this.getRacialLanguage(randomRace.id);
         if (racialLanguage) {
-          languages.push(racialLanguage);
+          await chaosSeed.$add('languages', racialLanguage, { transaction: t });
         }
-
-        chaosSeed.languages = languages;
-
-        // save updates
-        chaosSeed = await chaosSeed.save();
-
-        // update joint tables
-        await randomRace.$add('chaosSeeds', chaosSeed);
-        await randomAbility.$add('chaosSeeds', chaosSeed);
-
-        if (racialLanguage) {
-          await this.chaosSeedLanguageModel.create({
-            chaosSeedId: chaosSeed.id,
-            languageId: racialLanguage.id,
-          });
-        }
-
-        await this.chaosSeedLanguageModel.create({
-          chaosSeedId: chaosSeed.id,
-          languageId: commonLanguage!.id,
-        });
-
-        await this.chaosSeedAbilityModel.create({
-          chaosSeedId: chaosSeed.id,
-          abilityId: randomAbility.id,
-        });
       });
     } catch (error) {
       throw new BadRequestException(error.message);

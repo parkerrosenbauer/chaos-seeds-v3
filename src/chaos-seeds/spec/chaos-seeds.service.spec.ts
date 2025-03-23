@@ -12,13 +12,7 @@ import {
 import { AreasService } from 'src/areas/areas.service';
 import { ChaosSeed } from '../models/chaos-seed';
 import { getModelToken } from '@nestjs/sequelize';
-import {
-  Ability,
-  ChaosSeedAbility,
-  ChaosSeedLanguage,
-  Language,
-  Race,
-} from '../models';
+import { Ability, Language, Race } from '../models';
 import { Sequelize } from 'sequelize-typescript';
 
 describe('ChaosSeedsService', () => {
@@ -35,7 +29,7 @@ describe('ChaosSeedsService', () => {
   };
   const mockChaosSeedInstance = {
     ...CHAOS_SEED,
-    save: jest.fn().mockResolvedValue({ ...CHAOS_SEED, name: 'Heman' }),
+    save: jest.fn().mockResolvedValue(null),
     set name(value: string) {
       this._name = value
         .replace(/[^a-zA-Z]/g, '')
@@ -47,6 +41,9 @@ describe('ChaosSeedsService', () => {
     get name() {
       return this._name;
     },
+    set: jest.fn(),
+    $set: jest.fn(),
+    $add: jest.fn(),
     $get: jest.fn().mockImplementation((relation) => {
       if (relation === 'abilities') return Promise.resolve([ABILITY]);
       if (relation === 'race') return Promise.resolve(RACE);
@@ -59,17 +56,12 @@ describe('ChaosSeedsService', () => {
     findAll: jest.fn().mockResolvedValue([mockChaosSeedInstance]),
     create: jest.fn().mockResolvedValue({ id: 1, isDeadOnArrival: false }),
   };
-  const mockAbilityInstance = {
-    ...ABILITY,
-    $add: jest.fn(),
-  };
   const mockAbility = {
-    findAll: jest.fn().mockResolvedValue([mockAbilityInstance]),
+    findAll: jest.fn().mockResolvedValue([ABILITY]),
   };
   const mockRaceInstance = {
     ...RACE,
     $get: jest.fn().mockResolvedValue(LANGUAGE),
-    $add: jest.fn(),
   };
   const mockRace = {
     findByPk: jest.fn().mockResolvedValue(mockRaceInstance),
@@ -77,12 +69,6 @@ describe('ChaosSeedsService', () => {
   };
   const mockLanguage = {
     findOne: jest.fn().mockResolvedValue(COMMON),
-  };
-  const mockChoasSeedLanguage = {
-    create: jest.fn(),
-  };
-  const mockChaosSeedAbility = {
-    create: jest.fn(),
   };
   const mockAreaService = {
     getRandom: jest.fn().mockResolvedValue(AREA),
@@ -117,14 +103,6 @@ describe('ChaosSeedsService', () => {
           useValue: mockAreaService,
         },
         {
-          provide: getModelToken(ChaosSeedAbility),
-          useValue: mockChaosSeedAbility,
-        },
-        {
-          provide: getModelToken(ChaosSeedLanguage),
-          useValue: mockChoasSeedLanguage,
-        },
-        {
           provide: Sequelize,
           useValue: mockSequelize,
         },
@@ -132,10 +110,7 @@ describe('ChaosSeedsService', () => {
     }).compile();
 
     service = module.get<ChaosSeedsService>(ChaosSeedsService);
-  });
-
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+    jest.clearAllMocks();
   });
 
   describe('create', () => {
@@ -146,7 +121,7 @@ describe('ChaosSeedsService', () => {
     });
 
     it('should get a random area, its name and if it is deadly', async () => {
-      service.create();
+      await service.create();
       expect(mockAreaService.getRandom).toHaveBeenCalled();
       expect(mockAreaService.getName).toHaveBeenCalled();
       expect(mockAreaService.getIsDeadly).toHaveBeenCalled();
@@ -201,6 +176,9 @@ describe('ChaosSeedsService', () => {
   describe('patchSelf', () => {
     it('should return the new chaos seed name', async () => {
       const chaosSeedNameReq = { name: 'Heman_123' };
+      mockChaosSeedInstance.save = jest
+        .fn()
+        .mockResolvedValue({ ...mockChaosSeedInstance, name: 'Heman' });
 
       const chaosSeedName = await service.patchSelf(1, chaosSeedNameReq);
 
@@ -214,14 +192,12 @@ describe('ChaosSeedsService', () => {
     it('should assign a random race to a chaos seed', async () => {
       const getRandomRaceSpy = jest.spyOn(service, 'getRandomRace');
       const chaosSeedNameReq = { name: 'Heman_123' };
-
       await service.patchSelf(1, chaosSeedNameReq);
       const chaosSeedRace = await mockChaosSeedInstance.$get('race');
 
       expect(chaosSeedRace).toEqual(RACE);
       expect(getRandomRaceSpy).toHaveBeenCalled();
       expect(mockRace.findAll).toHaveBeenCalled();
-      expect(mockRaceInstance.$add).toHaveBeenCalled();
     });
 
     it('should assign a random ability to a chaos seed', async () => {
@@ -234,7 +210,6 @@ describe('ChaosSeedsService', () => {
       expect(chaosSeedAbilities).toEqual([ABILITY]);
       expect(getRandomAbilitySpy).toHaveBeenCalled();
       expect(mockAbility.findAll).toHaveBeenCalled();
-      expect(mockChaosSeedAbility.create).toHaveBeenCalled();
     });
 
     it('should assign common and a racial language to a chaos seed', async () => {
@@ -247,7 +222,6 @@ describe('ChaosSeedsService', () => {
       expect(chaosSeedLanguages).toEqual([COMMON, LANGUAGE]);
       expect(getRacialLanguageSpy).toHaveBeenCalled();
       expect(mockLanguage.findOne).toHaveBeenCalled();
-      expect(mockChoasSeedLanguage.create).toHaveBeenCalled();
     });
 
     it('should throw an error if the chaos seed is dead on arrival', async () => {
@@ -272,7 +246,7 @@ describe('ChaosSeedsService', () => {
   describe('getRandomAbility', () => {
     it('should return a random ability', async () => {
       const ability = await service.getRandomAbility();
-      expect(ability).toEqual(mockAbilityInstance);
+      expect(ability).toEqual(ABILITY);
       expect(mockAbility.findAll).toHaveBeenCalled();
     });
   });
