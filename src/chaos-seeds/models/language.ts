@@ -5,9 +5,12 @@ import {
   PrimaryKey,
   Table,
   HasMany,
+  BelongsToMany,
 } from 'sequelize-typescript';
 import { Identifiable } from 'src/common/interfaces';
 import { Race } from './race';
+import { ChaosSeed } from './chaos-seed';
+import { ChaosSeedLanguage } from './chaos-seed-language';
 
 @Table
 export class Language
@@ -21,6 +24,9 @@ export class Language
 
   @Column
   declare name: string;
+
+  @BelongsToMany(() => ChaosSeed, () => ChaosSeedLanguage)
+  declare chaosSeeds: ChaosSeed[];
 
   @HasMany(() => Race)
   declare races?: Race[];
