@@ -5,12 +5,12 @@ import { AreasService } from './areas.service';
 export class AreasController {
   constructor(private readonly areasService: AreasService) {}
 
-  @Get('/:id')
+  @Get(':id')
   async getById(@Query(ParseIntPipe) id: number) {
     return await this.areasService.getById(id);
   }
 
-  @Get('/random')
+  @Get('random')
   async getRandom() {
     return await this.areasService.getRandom();
   }
