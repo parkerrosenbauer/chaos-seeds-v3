@@ -4,6 +4,7 @@ import { ChaosSeedName } from '../value-objects';
 import {
   AutoIncrement,
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
@@ -12,6 +13,11 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Area } from '../../areas/models/area';
+import { Ability } from './ability';
+import { ChaosSeedAbility } from './chaos-seed-ability';
+import { Language } from './language';
+import { ChaosSeedLanguage } from './chaos-seed-language';
+import { Race } from './race';
 
 @Table
 export class ChaosSeed
@@ -45,9 +51,6 @@ export class ChaosSeed
 
   @BelongsTo(() => Area)
   declare startingArea: Area;
-
-  @Column({ defaultValue: 0 })
-  declare raceId: number;
 
   @Column({ defaultValue: 1 })
   declare level: number;
@@ -109,12 +112,16 @@ export class ChaosSeed
   @Column({ defaultValue: 'None' })
   declare marks: string;
 
-  @Column({ defaultValue: 'None' })
-  declare abilities: string;
+  @BelongsToMany(() => Ability, () => ChaosSeedAbility)
+  declare abilities?: Ability[];
 
-  @Column({ defaultValue: 'None' })
-  declare languages: string;
+  @BelongsToMany(() => Language, () => ChaosSeedLanguage)
+  declare languages?: Language[];
 
-  @Column({ defaultValue: 'None' })
-  declare race: string;
+  @ForeignKey(() => Race)
+  @Column
+  declare raceId?: number;
+
+  @BelongsTo(() => Race)
+  declare race?: Race;
 }
