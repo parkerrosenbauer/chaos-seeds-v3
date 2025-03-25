@@ -7,10 +7,10 @@ import {
   Model,
   PrimaryKey,
   Table,
-} from 'sequelize-typescript';
-import { Identifiable, Randomizable } from 'src/common/interfaces';
-import { ChaosSeed } from './chaos-seed';
-import { ChaosSeedAbility } from './chaos-seed-ability';
+} from "sequelize-typescript";
+import { Identifiable, Randomizable } from "src/common/interfaces";
+import { ChaosSeed } from "../../chaos-seeds/models";
+import { ChaosSeedAbility } from "./chaos-seed-ability";
 
 @Table
 export class Ability

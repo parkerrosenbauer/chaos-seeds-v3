@@ -1,6 +1,6 @@
-import { Column, ForeignKey, Model, Table } from 'sequelize-typescript';
-import { ChaosSeed } from './chaos-seed';
-import { Ability } from './ability';
+import { Column, ForeignKey, Model, Table } from "sequelize-typescript";
+import { ChaosSeed } from "../../chaos-seeds/models";
+import { Ability } from "./ability";
 
 @Table
 export class ChaosSeedAbility extends Model<

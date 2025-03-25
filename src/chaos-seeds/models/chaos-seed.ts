@@ -1,6 +1,6 @@
-import { Experienced } from '../interfaces';
-import { Identifiable } from 'src/common/interfaces';
-import { ChaosSeedName } from '../value-objects';
+import { Experienced } from "../interfaces";
+import { Identifiable } from "src/common/interfaces";
+import { ChaosSeedName } from "../value-objects";
 import {
   AutoIncrement,
   BelongsTo,
@@ -11,13 +11,15 @@ import {
   Model,
   PrimaryKey,
   Table,
-} from 'sequelize-typescript';
-import { Area } from '../../areas/models/area';
-import { Ability } from './ability';
-import { ChaosSeedAbility } from './chaos-seed-ability';
-import { Language } from './language';
-import { ChaosSeedLanguage } from './chaos-seed-language';
-import { Race } from './race';
+} from "sequelize-typescript";
+import { Area } from "../../areas/models/area";
+import {
+  Ability,
+  ChaosSeedAbility,
+  ChaosSeedLanguage,
+  Language,
+  Race,
+} from "../../characteristics/models";
 
 @Table
 export class ChaosSeed
@@ -31,13 +33,13 @@ export class ChaosSeed
 
   @Column({
     type: DataType.STRING,
-    defaultValue: 'Unknown',
+    defaultValue: "Unknown",
     set(value: string | ChaosSeedName) {
       const cleanedName =
         value instanceof ChaosSeedName
           ? value.name
           : new ChaosSeedName(value).name;
-      this.setDataValue('name', cleanedName);
+      this.setDataValue("name", cleanedName);
     },
   })
   declare name: string;
@@ -61,7 +63,7 @@ export class ChaosSeed
   @Column({ defaultValue: 0 })
   declare alignment: number;
 
-  @Column({ defaultValue: 'Level 1 Who are you again?' })
+  @Column({ defaultValue: "Level 1 Who are you again?" })
   declare reputation: string;
 
   @Column({ defaultValue: 100 })
@@ -100,16 +102,16 @@ export class ChaosSeed
   @Column({ defaultValue: 10 })
   declare luck: number;
 
-  @Column({ defaultValue: 'None ' })
+  @Column({ defaultValue: "None " })
   declare resistances: string;
 
-  @Column({ defaultValue: 'None ' })
+  @Column({ defaultValue: "None " })
   declare weaknesses: string;
 
-  @Column({ defaultValue: 'None' })
+  @Column({ defaultValue: "None" })
   declare skills: string;
 
-  @Column({ defaultValue: 'None' })
+  @Column({ defaultValue: "None" })
   declare marks: string;
 
   @BelongsToMany(() => Ability, () => ChaosSeedAbility)

@@ -9,10 +9,10 @@ import {
   HasMany,
   BelongsTo,
   DataType,
-} from 'sequelize-typescript';
-import { Identifiable, Randomizable } from 'src/common/interfaces';
-import { Language } from './language';
-import { ChaosSeed } from './chaos-seed';
+} from "sequelize-typescript";
+import { Identifiable, Randomizable } from "src/common/interfaces";
+import { Language } from "./language";
+import { ChaosSeed } from "../../chaos-seeds/models";
 
 @Table
 export class Race
