@@ -108,4 +108,14 @@ describe("CharacteristicsService", () => {
       expect(racialLanguage).toEqual(LANGUAGE);
     });
   });
+
+  describe("getCommonLanguage", () => {
+    it("should return the common language", async () => {
+      const commonLanguage = await service.getCommonLanguage();
+      expect(commonLanguage).toEqual(COMMON);
+      expect(mockLanguage.findOne).toHaveBeenCalledWith({
+        where: { name: "Common" },
+      });
+    });
+  });
 });

@@ -9,8 +9,7 @@ import { AreaNameResponse } from "../areas/dtos";
 import { ChaosSeedCreateResponse, ChaosSeedNameReqRes } from "./dtos";
 import { ChaosSeed } from "./models/chaos-seed";
 import { InjectModel } from "@nestjs/sequelize";
-import { Ability, Language, Race } from "../characteristics/models";
-import { randomChance } from "../common/utils";
+import { Language } from "../characteristics/models";
 import { Sequelize } from "sequelize-typescript";
 import { CharacteristicsService } from "../characteristics/characteristics.service";
 
@@ -18,8 +17,6 @@ import { CharacteristicsService } from "../characteristics/characteristics.servi
 export class ChaosSeedsService {
   constructor(
     @InjectModel(ChaosSeed) private chaosSeedModel: typeof ChaosSeed,
-    @InjectModel(Race) private raceModel: typeof Race,
-    @InjectModel(Ability) private abilityModel: typeof Ability,
     @InjectModel(Language) private languageModel: typeof Language,
     @Inject(AreasService)
     private readonly areasService: AreasService,
@@ -83,10 +80,9 @@ export class ChaosSeedsService {
         await chaosSeed.$add("abilities", randomAbility, { transaction: t });
 
         // set language(s)
-        const commonLanguage = await this.languageModel.findOne({
-          where: { name: "Common" },
-        });
-        await chaosSeed.$add("languages", commonLanguage!, { transaction: t });
+        const commonLanguage =
+          await this.characteristicsService.getCommonLanguage();
+        await chaosSeed.$add("languages", commonLanguage, { transaction: t });
 
         const racialLanguage =
           await this.characteristicsService.getRacialLanguage(randomRace.id);

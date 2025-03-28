@@ -45,4 +45,11 @@ export class CharacteristicsService {
     if (!race) throw new NotFoundException("Race not found");
     return await race.$get("language");
   }
+
+  async getCommonLanguage(): Promise<Language> {
+    const commonLanguage = await this.languageModel.findOne({
+      where: { name: "Common" },
+    });
+    return commonLanguage!;
+  }
 }
