@@ -12,6 +12,7 @@ import { InjectModel } from "@nestjs/sequelize";
 import { Ability, Language, Race } from "../characteristics/models";
 import { randomChance } from "../common/utils";
 import { Sequelize } from "sequelize-typescript";
+import { CharacteristicsService } from "../characteristics/characteristics.service";
 
 @Injectable()
 export class ChaosSeedsService {
@@ -22,6 +23,8 @@ export class ChaosSeedsService {
     @InjectModel(Language) private languageModel: typeof Language,
     @Inject(AreasService)
     private readonly areasService: AreasService,
+    @Inject(CharacteristicsService)
+    private readonly characteristicsService: CharacteristicsService,
     private sequelize: Sequelize
   ) {}
 
@@ -55,21 +58,6 @@ export class ChaosSeedsService {
     return await this.chaosSeedModel.findAll();
   }
 
-  async getAbilities(id: number): Promise<Ability[]> {
-    const chaosSeed = await this.getById(id);
-    return await chaosSeed.$get("abilities");
-  }
-
-  async getRace(id: number): Promise<Race | null> {
-    const chaosSeed = await this.getById(id);
-    return await chaosSeed.$get("race");
-  }
-
-  async getLanguages(id: number): Promise<Language[]> {
-    const chaosSeed = await this.getById(id);
-    return await chaosSeed.$get("languages");
-  }
-
   async patchSelf(
     id: number,
     chaosSeedNameReq: ChaosSeedNameReqRes
@@ -86,11 +74,12 @@ export class ChaosSeedsService {
         chaosSeed = await chaosSeed.save();
 
         // set race
-        const randomRace = await this.getRandomRace();
+        const randomRace = await this.characteristicsService.getRandomRace();
         await chaosSeed.$set("race", randomRace, { transaction: t });
 
         // set ability
-        const randomAbility = await this.getRandomAbility();
+        const randomAbility =
+          await this.characteristicsService.getRandomAbility();
         await chaosSeed.$add("abilities", randomAbility, { transaction: t });
 
         // set language(s)
@@ -99,7 +88,8 @@ export class ChaosSeedsService {
         });
         await chaosSeed.$add("languages", commonLanguage!, { transaction: t });
 
-        const racialLanguage = await this.getRacialLanguage(randomRace.id);
+        const racialLanguage =
+          await this.characteristicsService.getRacialLanguage(randomRace.id);
         if (racialLanguage) {
           await chaosSeed.$add("languages", racialLanguage, { transaction: t });
         }
@@ -108,21 +98,5 @@ export class ChaosSeedsService {
       throw new BadRequestException(error.message);
     }
     return { name: chaosSeed.name };
-  }
-
-  async getRandomRace(): Promise<Race> {
-    const races = await this.raceModel.findAll();
-    return randomChance<Race>(races);
-  }
-
-  async getRandomAbility(): Promise<Ability> {
-    const abilities = await this.abilityModel.findAll();
-    return randomChance<Ability>(abilities);
-  }
-
-  async getRacialLanguage(raceId: number): Promise<Language | null> {
-    const race = await this.raceModel.findByPk(raceId);
-    if (!race) throw new NotFoundException("Race not found");
-    return await race.$get("language");
   }
 }

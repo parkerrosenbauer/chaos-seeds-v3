@@ -1,4 +1,4 @@
-import { ChaosSeedCreateResponse } from "../dtos";
+import { ChaosSeedCreateResponse } from "../../chaos-seeds/dtos";
 
 export const AREA = {
   regionId: 1,

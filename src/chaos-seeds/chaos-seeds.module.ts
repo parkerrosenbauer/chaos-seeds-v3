@@ -12,10 +12,12 @@ import {
   Language,
   Race,
 } from "../characteristics/models";
+import { CharacteristicsService } from "../characteristics/characteristics.service";
 
 @Module({
   imports: [
     AreasModule,
+    CharacteristicsService,
     SequelizeModule.forFeature([
       ChaosSeed,
       Race,

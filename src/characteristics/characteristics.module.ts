@@ -24,6 +24,6 @@ import { ChaosSeed } from "../chaos-seeds/models";
   ],
   controllers: [CharacteristicsController],
   providers: [CharacteristicsService],
-  exports: [SequelizeModule],
+  exports: [CharacteristicsService, SequelizeModule],
 })
 export class CharacteristicsModule {}
