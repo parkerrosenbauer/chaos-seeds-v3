@@ -25,6 +25,7 @@ import { Sequelize } from "sequelize-typescript";
           database: configService.get("DB_NAME"),
           autoLoadModels: true,
           synchronize: true,
+          logging: process.env.NODE_ENV !== "test",
         };
         return config;
       },

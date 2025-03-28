@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -9,7 +10,6 @@ import { AreaNameResponse } from "../areas/dtos";
 import { ChaosSeedCreateResponse, ChaosSeedNameReqRes } from "./dtos";
 import { ChaosSeed } from "./models/chaos-seed";
 import { InjectModel } from "@nestjs/sequelize";
-import { Language } from "../characteristics/models";
 import { Sequelize } from "sequelize-typescript";
 import { CharacteristicsService } from "../characteristics/characteristics.service";
 
@@ -17,10 +17,9 @@ import { CharacteristicsService } from "../characteristics/characteristics.servi
 export class ChaosSeedsService {
   constructor(
     @InjectModel(ChaosSeed) private chaosSeedModel: typeof ChaosSeed,
-    @InjectModel(Language) private languageModel: typeof Language,
     @Inject(AreasService)
     private readonly areasService: AreasService,
-    @Inject(CharacteristicsService)
+    @Inject(forwardRef(() => CharacteristicsService))
     private readonly characteristicsService: CharacteristicsService,
     private sequelize: Sequelize
   ) {}

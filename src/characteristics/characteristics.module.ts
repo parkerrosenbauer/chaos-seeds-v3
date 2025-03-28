@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { CharacteristicsController } from "./characteristics.controller";
 import { CharacteristicsService } from "./characteristics.service";
 import { SequelizeModule } from "@nestjs/sequelize";
@@ -10,9 +10,11 @@ import {
   Race,
 } from "./models";
 import { ChaosSeed } from "../chaos-seeds/models";
+import { ChaosSeedsModule } from "../chaos-seeds/chaos-seeds.module";
 
 @Module({
   imports: [
+    forwardRef(() => ChaosSeedsModule),
     SequelizeModule.forFeature([
       Race,
       Language,
@@ -24,6 +26,6 @@ import { ChaosSeed } from "../chaos-seeds/models";
   ],
   controllers: [CharacteristicsController],
   providers: [CharacteristicsService],
-  exports: [CharacteristicsService, SequelizeModule],
+  exports: [CharacteristicsModule, SequelizeModule],
 })
 export class CharacteristicsModule {}

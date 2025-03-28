@@ -1,6 +1,10 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
-import { ChaosSeed } from "../chaos-seeds/models";
 import { Ability, Language, Race } from "./models";
 import { ChaosSeedsService } from "../chaos-seeds/chaos-seeds.service";
 import { randomChance } from "../common/utils";
@@ -8,11 +12,11 @@ import { randomChance } from "../common/utils";
 @Injectable()
 export class CharacteristicsService {
   constructor(
-    @InjectModel(ChaosSeed) private chaosSeedModel: typeof ChaosSeed,
     @InjectModel(Race) private raceModel: typeof Race,
     @InjectModel(Ability) private abilityModel: typeof Ability,
     @InjectModel(Language) private languageModel: typeof Language,
-    @Inject(ChaosSeedsService) private chaosSeedsService: ChaosSeedsService
+    @Inject(forwardRef(() => ChaosSeedsService))
+    private chaosSeedsService: ChaosSeedsService
   ) {}
 
   async getAbilities(id: number): Promise<Ability[]> {
