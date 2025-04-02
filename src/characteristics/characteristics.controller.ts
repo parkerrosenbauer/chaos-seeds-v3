@@ -7,18 +7,18 @@ export class CharacteristicsController {
     private readonly characteristicsService: CharacteristicsService
   ) {}
 
-  @Get("abilities/:id")
-  async getAbilities(@Param("id", ParseIntPipe) id: number) {
-    return await this.characteristicsService.getAbilities(id);
+  @Get("ability/:id")
+  async getAbilityById(@Param("id", ParseIntPipe) id: number) {
+    return await this.characteristicsService.getAbilityById(id);
   }
 
   @Get("race/:id")
   async getRace(@Param("id", ParseIntPipe) id: number) {
-    return await this.characteristicsService.getRace(id);
+    return await this.characteristicsService.getRaceById(id);
   }
 
-  @Get("languages/:id")
-  async getLanguages(@Param("id", ParseIntPipe) id: number) {
-    return await this.characteristicsService.getLanguages(id);
+  @Get("language/:id")
+  async getLanguageById(@Param("id", ParseIntPipe) id: number) {
+    return await this.characteristicsService.getLanguageById(id);
   }
 }

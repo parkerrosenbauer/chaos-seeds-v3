@@ -1,12 +1,6 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Ability, Language, Race } from "./models";
-import { ChaosSeedsService } from "../chaos-seeds/chaos-seeds.service";
 import { randomChance } from "../common/utils";
 
 @Injectable()
@@ -14,24 +8,25 @@ export class CharacteristicsService {
   constructor(
     @InjectModel(Race) private raceModel: typeof Race,
     @InjectModel(Ability) private abilityModel: typeof Ability,
-    @InjectModel(Language) private languageModel: typeof Language,
-    @Inject(forwardRef(() => ChaosSeedsService))
-    private chaosSeedsService: ChaosSeedsService
+    @InjectModel(Language) private languageModel: typeof Language
   ) {}
 
-  async getAbilities(id: number): Promise<Ability[]> {
-    const chaosSeed = await this.chaosSeedsService.getById(id);
-    return await chaosSeed.$get("abilities");
+  async getAbilityById(id: number): Promise<Ability> {
+    const ability = await this.abilityModel.findByPk(id);
+    if (!ability) throw new NotFoundException("Ability not found");
+    return ability;
   }
 
-  async getRace(id: number): Promise<Race | null> {
-    const chaosSeed = await this.chaosSeedsService.getById(id);
-    return await chaosSeed.$get("race");
+  async getRaceById(id: number): Promise<Race> {
+    const race = await this.raceModel.findByPk(id);
+    if (!race) throw new NotFoundException("Race not found");
+    return race;
   }
 
-  async getLanguages(id: number): Promise<Language[]> {
-    const chaosSeed = await this.chaosSeedsService.getById(id);
-    return await chaosSeed.$get("languages");
+  async getLanguageById(id: number): Promise<Language> {
+    const language = await this.languageModel.findByPk(id);
+    if (!language) throw new NotFoundException("Language not found");
+    return language;
   }
 
   async getRandomRace(): Promise<Race> {

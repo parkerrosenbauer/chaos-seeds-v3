@@ -8,20 +8,9 @@ import { ChaosSeedsService } from "../../chaos-seeds/chaos-seeds.service";
 
 describe("CharacteristicsService", () => {
   let service: CharacteristicsService;
-  const mockChaosSeedInstance = {
-    ...CHAOS_SEED,
-    $get: jest.fn().mockImplementation((relation) => {
-      if (relation === "abilities") return Promise.resolve([ABILITY]);
-      if (relation === "race") return Promise.resolve(RACE);
-      if (relation === "languages") return Promise.resolve([COMMON, LANGUAGE]);
-      return Promise.resolve(null);
-    }),
-  };
-  const mockChaosSeedService = {
-    getById: jest.fn().mockResolvedValue(mockChaosSeedInstance),
-  };
   const mockAbility = {
     findAll: jest.fn().mockResolvedValue([ABILITY]),
+    findByPk: jest.fn().mockResolvedValue(ABILITY),
   };
   const mockRaceInstance = {
     ...RACE,
@@ -33,6 +22,7 @@ describe("CharacteristicsService", () => {
   };
   const mockLanguage = {
     findOne: jest.fn().mockResolvedValue(COMMON),
+    findByPk: jest.fn().mockResolvedValue(LANGUAGE),
   };
 
   beforeEach(async () => {
@@ -55,34 +45,30 @@ describe("CharacteristicsService", () => {
           provide: getModelToken(Language),
           useValue: mockLanguage,
         },
-        {
-          provide: ChaosSeedsService,
-          useValue: mockChaosSeedService,
-        },
       ],
     }).compile();
 
     service = module.get<CharacteristicsService>(CharacteristicsService);
   });
 
-  describe("getAbilities", () => {
-    it("should return the abilities of a chaos seed", async () => {
-      const abilities = await service.getAbilities(1);
-      expect(abilities).toEqual([ABILITY]);
+  describe("getAbilityById", () => {
+    it("should return an ability", async () => {
+      const abilities = await service.getAbilityById(1);
+      expect(abilities).toEqual(ABILITY);
     });
   });
 
-  describe("getRace", () => {
-    it("should return the race of a chaos seed", async () => {
-      const race = await service.getRace(1);
-      expect(race).toEqual(RACE);
+  describe("getRaceById", () => {
+    it("should return a race", async () => {
+      const race = await service.getRaceById(1);
+      expect(race).toEqual(mockRaceInstance);
     });
   });
 
-  describe("getLanguages", () => {
-    it("should return the languages of a chaos seed", async () => {
-      const languages = await service.getLanguages(1);
-      expect(languages).toEqual([COMMON, LANGUAGE]);
+  describe("getLanguageById", () => {
+    it("should return a language", async () => {
+      const languages = await service.getLanguageById(1);
+      expect(languages).toEqual(LANGUAGE);
     });
   });
 
